@@ -27,7 +27,13 @@ from pytz_deprecation_shim import timezone
 from forms import *
 from flask_migrate import Migrate
 import sys
-from models import app, db, Venue, Artist, Show
+from models import (
+    app,
+    db,
+    Venue,
+    Artist,
+    Show
+)
 
 # ----------------------------------------------------------------------------#
 # App Config.
@@ -172,49 +178,33 @@ def search_venues():
 
 @app.route('/venues/<int:venue_id>')
 def show_venue(venue_id):
-    # shows the venue page with the given venue_id
-    error = False
-    form = VenueForm()
-    # to store venue details from the database
-    past_shows = []
-    upcoming_shows = []
-    past_shows_count = 0
-    upcoming_shows_count = 0
-    # to get specific venue details
+    # to get specific venue
     venue = Venue.query.get(venue_id)
-    # print(venue)
-    # manipulating the venue data based on shows
-    for show in venue.shows:
-        print(show)
-        # to group past and upcomimg shows
-        if show.start_time > datetime.now():
-            # getting specific venue details with specific columns from the db
-            artist = Artist.query.with_entities(
-                Artist.id, Artist.name, Artist.image_link).\
-                filter_by(id=show.artist_id).first()
-            print(artist)
-            # storing the data
-            upcoming_shows.append({
-                'artist_id': artist.id,
-                'artist_name': artist.name,
-                'artist_image_link': artist.image_link,
-                'start_time': str(show.start_time)
+    # to get current time
+    current_date = datetime.now()
+    # to get shows for specific venue
+    venue_shows = Show.query.filter(Show.venue_id == venue_id)
+    # to store past shows
+    p_shows = []
+    # to store upcoming shows
+    u_shows = []
+    # loop through all the venue shows
+    for show in venue_shows:
+        if show.start_time < current_date:
+            # appending past shows
+            p_shows.append({
+                'artist_id': show.id,
+                'artist_name': show.artist.name,
+                'artist_image_link': show.venue.image_link,
+                'start_time': format_datetime(str(show.start_time))
             })
-            upcoming_shows_count += 1
         else:
-            # getting specific venue details with specific columns from the db
-            artist = Artist.query.with_entities(
-                Artist.id, Artist.name, Artist.image_link).\
-                filter_by(id=show.artist_id).first()
-            # storing the data
-            past_shows.append({
-                'artist_id': artist.id,
-                'artist_name': artist.name,
-                'artist_image_link': artist.image_link,
-                'start_time': str(show.start_time)
+            u_shows.append({
+                'artist_id': show.id,
+                'artist_name': show.artist.name,
+                'artist_image_link': show.venue.image_link,
+                'start_time': format_datetime(str(show.start_time))
             })
-            past_shows_count += 1
-    #
     # appending the details to the data var.
     data = {
         "id": venue.id,
@@ -229,10 +219,10 @@ def show_venue(venue_id):
         "seeking_talent": venue.seeking_talent,
         "seeking_description": venue.seeking_description,
         "image_link": venue.image_link,
-        "past_shows": past_shows,
-        "upcoming_shows": upcoming_shows,
-        "past_shows_count": past_shows_count,
-        "upcoming_shows_count": upcoming_shows_count,
+        "past_shows": p_shows,
+        "upcoming_shows": u_shows,
+        "past_shows_count": len(p_shows),
+        "upcoming_shows_count": len(u_shows),
     }
     return render_template('pages/show_venue.html', venue=data)
 
@@ -378,46 +368,40 @@ def search_artists():
 def show_artist(artist_id):
     # shows the artist page with the given artist_id
     # table, using artist_id
-    # to store the artist details from the database
-    past_shows = []
-    upcoming_shows = []
-    past_shows_count = 0
-    upcoming_shows_count = 0
-    # to get the artist details
+
+    # to get specific artist for the datase
     artist = Artist.query.get(artist_id)
-    # manipulating the artist data based on shows
-    for show in artist.shows:
-        # to group past and upcoming shows
-        if show.start_time > datetime.now():
-            # getting specific venue details with specific
-            # columns from the db
-            venue = Venue.query.with_entities(
-                Venue.id, Venue.name, Venue.image_link).\
-                filter_by(id=show.venue_id).first()
-            # storing the data
-            upcoming_shows.append({
-                "venue_id": venue.id,
-                "venue_name": venue.name,
-                "venue_image_link": venue.image_link,
-                "start_time": str(show.start_time)
+
+    # get the current time
+    current_date = datetime.now()
+
+    # to get shows for specific artist
+    artist_shows = Show.query.filter(Show.artist_id == artist_id)
+
+    # to store past shows
+    p_shows = []
+
+    # to store upcoming shows
+    u_shows = []
+
+    # loop through all the artist shows
+    for show in artist_shows:
+        if show.start_time < current_date:
+            # appending past shows
+            p_shows.append({
+                'venue_id': show.id,
+                'venue_name': show.venue.name,
+                'venue_image_link': show.venue.image_link,
+                'start_time': format_datetime(str(show.start_time))
             })
-            upcoming_shows_count += 1
         else:
-            # getting specific venue details with specific
-            # columns from the db
-            venue = Venue.query.with_entities(
-                Venue.id, Venue.name, Venue.image_link).\
-                filter_by(id=show.venue_id).first()
-            # storing the data
-            past_shows.append({
-                "venue_id": venue.id,
-                "venue_name": venue.name,
-                "venue_image_link": venue.image_link,
-                "start_time": str(show.start_time)
+            u_shows.append({
+                'venue_id': show.id,
+                'venue_name': show.venue.name,
+                'venue_image_link': show.venue.image_link,
+                'start_time': format_datetime(str(show.start_time))
             })
-            past_shows_count += 1
-    #
-    # appending the details to the data var.
+
     data = {
         "id": artist.id,
         "name": artist.name,
@@ -430,11 +414,12 @@ def show_artist(artist_id):
         "seeking_venue": artist.seeking_venue,
         "seeking_description": artist.seeking_description,
         "image_link": artist.image_link,
-        "past_shows": past_shows,
-        "upcoming_shows": upcoming_shows,
-        "past_shows_count": past_shows_count,
-        "upcoming_shows_count": upcoming_shows_count,
+        "past_shows": p_shows,
+        "upcoming_shows": u_shows,
+        "past_shows_count": len(p_shows),
+        "upcoming_shows_count": len(u_shows),
     }
+
     return render_template('pages/show_artist.html', artist=data)
 
 #  Update

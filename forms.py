@@ -96,7 +96,8 @@ class VenueForm(Form):
         'address', validators=[DataRequired()]
     )
     phone = StringField(
-        'phone'
+        'phone',
+        validators=[DataRequired(), validate_phone]
     )
     image_link = StringField(
         'image_link'
