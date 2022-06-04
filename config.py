@@ -11,3 +11,5 @@ DEBUG = True
 
 # TODO IMPLEMENT DATABASE URL
 SQLALCHEMY_DATABASE_URI = 'postgresql://zeus:password@localhost:5432/fyyur'
+# To disable termminal notification
+SQLALCHEMY_TRACK_MODIFICATIONS = False

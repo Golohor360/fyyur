@@ -1,16 +1,21 @@
 {% extends 'layouts/main.html' %}
 {% block title %}Fyyur | Artists{% endblock %}
 {% block content %}
-<ul class="items">
-	{% for artist in artists %}
-	<li>
-		<a href="/artists/{{ artist.id }}">
-			<i class="fas fa-users"></i>
-			<div class="item">
-				<h5>{{ artist.name }}</h5>
-			</div>
-		</a>
-	</li>
-	{% endfor %}
-</ul>
+	<!-- to check if shows is defined and there is a least one show available in the database -->
+	{% if artists is defined and artists|length %}
+		<ul class="items">
+			{% for artist in artists %}
+			<li>
+				<a href="/artists/{{ artist.id }}">
+					<i class="fas fa-users"></i>
+					<div class="item">
+						<h5>{{ artist.name }}</h5>
+					</div>
+				</a>
+			</li>
+			{% endfor %}
+		</ul>
+	{% else %}
+		<h4>No artists available, visit the <a href="/">homepage</a> to publicize about your show for free.</h4>
+	{% endif %}
 {% endblock %}

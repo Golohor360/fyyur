@@ -209,3 +209,8 @@ h2.monospace {
 .subtitle {
   opacity: 0.5;
 }
+
+/* Custom other styles end */
+.recent-artist {
+	padding-top: 56px !important;
+}

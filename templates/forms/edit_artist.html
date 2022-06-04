@@ -3,57 +3,104 @@
 {% block content %}
   <div class="form-wrapper">
     <form class="form" method="post" action="/artists/{{artist.id}}/edit">
+      {{ form.csrf_token }}
       <h3 class="form-heading">Edit artist <em>{{ artist.name }}</em></h3>
       <div class="form-group">
         <label for="name">Name</label>
-        {{ form.name(class_ = 'form-control', autofocus = true) }}
+        {{ form.name(class_ = 'form-control', autofocus = true, value=artist.name) }}
       </div>
       <div class="form-group">
           <label>City & State</label>
           <div class="form-inline">
             <div class="form-group">
-              {{ form.city(class_ = 'form-control', placeholder='City', autofocus = true) }}
+              {{ form.city(class_ = 'form-control', placeholder='City', autofocus = true, value=artist.city) }}
             </div>
             <div class="form-group">
-              {{ form.state(class_ = 'form-control', placeholder='State', autofocus = true) }}
+              {{ form.state(class_ = 'form-control', placeholder='State', autofocus = true, value=artist.state) }}
             </div>
           </div>
       </div>
       <div class="form-group">
           <label for="phone">Phone</label>
-          {{ form.phone(class_ = 'form-control', placeholder='xxx-xxx-xxxx', autofocus = true) }}
+          {{ form.phone(class_ = 'form-control', placeholder='xxx-xxx-xxxx', autofocus = true, value=artist.phone) }}
         </div>
       <div class="form-group">
         <label for="genres">Genres</label>
         <small>Ctrl+Click to select multiple</small>
+        <div class="genres">
+          {% for genre in artist.genres %}
+          <span class="genre">{{ genre }}</span>
+          {% endfor %}
+        </div>
         {{ form.genres(class_ = 'form-control', placeholder='Genres, separated by commas', autofocus = true) }}
       </div>
       <div class="form-group">
           <label for="facebook_link">Facebook Link</label>
-          {{ form.facebook_link(class_ = 'form-control', placeholder='http://', autofocus = true) }}
+          {{ form.facebook_link(class_ = 'form-control', placeholder='http://', autofocus = true, value=artist.facebook_link) }}
         </div>
       
       <div class="form-group">
           <label for="image_link">Image Link</label>
-          {{ form.image_link(class_ = 'form-control', placeholder='http://', autofocus = true) }}
+          {{ form.image_link(class_ = 'form-control', placeholder='http://', autofocus = true, value=artist.image_link) }}
       </div>
 
       <div class="form-group">
             <label for="website_link">Website Link</label>
-            {{ form.website_link(class_ = 'form-control', placeholder='http://', autofocus = true) }}
+            {{ form.website_link(class_ = 'form-control', placeholder='http://', autofocus = true, value=artist.website) }}
       </div>
 
       <div class="form-group">
           <label for="seeking_venue">Looking for Venues</label>
-          {{ form.seeking_venue(placeholder='Venue', autofocus = true) }}
+          {{ form.seeking_venue(placeholder='Venue', autofocus = true, checked=artist.seeking_venue) }}
       </div>
 
       <div class="form-group">
           <label for="seeking_description">Seeking Description</label>
-          {{ form.seeking_description(class_ = 'form-control', autofocus = true) }}
+          {{ form.seeking_description(class_ = 'form-control', autofocus = true, value=artist.seeking_description) }}
       </div>
       
       <input type="submit" value="Edit Artist" class="btn btn-primary btn-lg btn-block">
     </form>
   </div>
+
+  <!-- adding JavaScript to dynamically show an artist previous genres before editing -->
+  <script type="text/javascript">
+    window.onload = () => {
+      // to get a specific artist genres
+      // to get current artist id from the url
+      artist_id = parseInt(window.location.href.split('/')[4]);
+      // to check if the value is a type of int
+      if (typeof artist_id === 'number') {
+        // to get artist genres from the back-end
+        fetch('/get_artist_genres/' + artist_id, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          }
+        }).then((response) => {
+          return response.json();
+        }).then((response) => {
+          // artist previous genres
+          const previous_artist_genres = response.artist_genres;
+          // getting the edit page select options
+          const artist_genres_select_options = document.getElementById('genres');
+          // looping through the options and then adding a select if it was
+          //  previously selected
+          for(i = 0; i < artist_genres_select_options.options.length; i++) {
+            // to store the current select option value from the loop
+            const currunt_option_value_from_loop = artist_genres_select_options[i].value;
+            // to add selected attribute base on previous artist genre options
+            if (previous_artist_genres.indexOf(currunt_option_value_from_loop) > -1){
+              // adding selected to any option that was previously selected
+              artist_genres_select_options[i].setAttribute('selected', '');
+            }
+          }
+        }).catch((e) => {
+          console.log(e);
+        })
+      }
+    }
+
+  </script>
 {% endblock %}
+

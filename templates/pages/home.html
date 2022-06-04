@@ -22,4 +22,37 @@
 		<img id="front-splash" src="{{ url_for('static',filename='img/front-splash.jpg') }}" alt="Front Photo of Musical Band" />
 	</div>
 </div>
+<!-- recent artist  -->
+{% if recent_artists is defined and recent_artists|length %}
+	<section>
+		<h2 class="monospace">Recently added artists</h2>
+		<div class="genres">
+			{% for artist in recent_artists %}
+			<a href="/artists/{{ artist.id }}"><span class="genre"><i class="fas fa-users" aria-hidden="true"></i> "{{ artist.name }}" from {{ artist.city }}, {{ artist.state }}</span></a>
+			{% endfor %}
+		</div>
+	</section>
+{% endif %}
+<!-- recent artist  -->
+<!-- recently added venues -->
+<!-- to check if shows is defined and there is a least one show available in the database -->
+{% if areas is defined and areas|length %}
+<section>
+	<h2 class="monospace">Recently added venues</h2>
+	{% for area in areas %}
+		<h3>{{ area.city }}, {{ area.state }}</h3>
+		<ul class="items">
+			{% for venue in area.venues %}
+			<li>
+					<div class="item">
+						<h5><i class="fas fa-music"></i> &nbsp; <a href="/venues/{{ venue.id }}">{{ venue.name }}</a></h5>
+					</div>
+				<!-- </a> -->
+			</li>
+			{% endfor %}
+		</ul>
+	{% endfor %}
+</section>
+{% endif %}
+<!-- recently added venues -->
 {% endblock %}
